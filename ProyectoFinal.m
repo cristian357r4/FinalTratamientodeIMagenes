@@ -1,0 +1,108 @@
+clc;
+clear all;
+close all;
+
+
+%% Extrae los circulos solidos 
+%puede utilizarse para funcion
+Im_base = imread('alfabeto_señas_mexicano.jpg');
+Im_base = imread('imagen_10.jpg');
+Im_gray= rgb2gray(Im_base);
+Im_base = uint8(Im_base);
+%%figure,imshow(Im_gray);
+
+Im_bw = im2bw(Im_gray,0.4);
+figure,imshow(Im_bw);
+Contornos_im = edge(Im_bw,'sobel');
+figure,imshow(Contornos_im);
+%limpia_bordes = imclearborder(Contornos_im);
+%figure,imshow(Im_bw);
+
+llena_hollos = imfill(Contornos_im,'holes');
+circulo_solido = bwareaopen(llena_hollos,1200);
+%figure,imshow(circulo_solido);
+
+circulo_solido =im2double(circulo_solido);
+circulo_solido =im2uint8(circulo_solido);
+
+%% Operacion logica extraccion de las señas
+%%notBW = not(circulo_solido);
+Im_signs = bitand(Im_gray,circulo_solido);
+%figure,imshow(Im_signs);
+
+% ImS_bw = im2bw(Im_signs,0.7);%%probale con 0.7
+% figure,imshow(ImS_bw);
+% Im_skel = bwmorph(Im_bw,'skel',Inf);
+% imshow(Im_skel);
+
+Im_bw = im2uint8(Im_bw);
+Im_letras = Im_bw - circulo_solido;
+
+
+
+%% Separa las regiones para buscar los momentos hu
+label = bwlabel(circulo_solido);
+%stats = regionprops(label,'all');
+
+
+for numerodeObjetos = 1:max(max(label))
+    [row, col] = find(label==numerodeObjetos);
+    len=max(row) -min(row)+2;
+    breath = max(col)- min(col);
+    target=uint8(zeros([len breath]));
+    sy = min(col)-1;
+    sx = min(row)-1;
+    for i = 1:size(row,1)
+        x = row(i,1)-sx;
+        y = col(i,1)-sy;
+        target(x,y) = Im_signs(row(i,1),col(i,1));
+    end
+    
+    mytitle= strcat('Objeto numero:', num2str(numerodeObjetos));
+    figure,imshow(target);title(mytitle);
+    hu_momenttos(numerodeObjetos,:) = invmoments(target);
+  
+    
+end
+
+load('momentos.mat');
+
+%for ()
+% BW2 = im2bw(Im_signs);
+% BW2 = bwareaopen(BW2,100);
+% 
+% [Label, num_regions] = bwlabel(circulo_solido,8);
+% Num2 = max(max(num_regions));
+
+% Componentes_conexos = bwconncomp(circulo_solido);
+% imagen_etiquetada= labelmatrix(Componentes_conexos);
+% RGB = label2rgb(imagen_etiquetada);
+% figure,imshow(RGB);
+
+%figure,imshow(circulo_solido);
+title('Imagen con Círculos')
+L = bwlabel(circulo_solido,8);
+stats = regionprops(L,'all');
+stats(1)
+% circulo_solido = im2logical(circulo_solido);
+% stats = regionprops(circulo_solido,'Perimeter','Area','Centroid','BoundingBox');
+
+figure,imshow(Im_base);
+
+
+
+%% Crear el array de letras 
+%%convirtiendo a funcion codigo de texto
+%%text = fileread('Letras.txt');
+%%text = strrep(text,'l','I');
+%text=upper(text);
+%text= text(find(~isspace(text))),
+
+% 
+% for k = 1:length(text)
+%  [Lets] = str(k);
+%   
+% end
+
+
+

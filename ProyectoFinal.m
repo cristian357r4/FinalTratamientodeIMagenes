@@ -5,16 +5,16 @@ close all;
 
 %% Extrae los circulos solidos 
 %puede utilizarse para funcion
-Im_base = imread('alfabeto_señas_mexicano.jpg');
+alfabeto = imread('Alfabeto.jpg');
 Im_base = imread('imagen_10.jpg');
 Im_gray= rgb2gray(Im_base);
 Im_base = uint8(Im_base);
 %%figure,imshow(Im_gray);
 
 Im_bw = im2bw(Im_gray,0.4);
-figure,imshow(Im_bw);
+%figure,imshow(Im_bw);
 Contornos_im = edge(Im_bw,'sobel');
-figure,imshow(Contornos_im);
+figure,imshow(alfabeto);
 %limpia_bordes = imclearborder(Contornos_im);
 %figure,imshow(Im_bw);
 
@@ -58,36 +58,51 @@ for numerodeObjetos = 1:max(max(label))
         target(x,y) = Im_signs(row(i,1),col(i,1));
     end
     
-    mytitle= strcat('Objeto numero:', num2str(numerodeObjetos));
-    figure,imshow(target);title(mytitle);
-    hu_momenttos(numerodeObjetos,:) = invmoments(target);
+    %mytitle= strcat('Objeto numero:', num2str(numerodeObjetos));
+    %%figure,imshow(target);title(mytitle);
+    
+    
+    %recopila los momentos de hu de cada zona circular de la imagen, esta
+    %corresponde a una letra del alfabeto
+    hu_momentos(numerodeObjetos,:) = invmoments(target);
   
     
 end
 
-load('momentos.mat');
-
-%for ()
-% BW2 = im2bw(Im_signs);
-% BW2 = bwareaopen(BW2,100);
+load('image10.mat');
+% palabra = hum(:,8);
+% palabra =char(palabra);
+% palabra =string(palabra);
+% disp(palabra);
 % 
-% [Label, num_regions] = bwlabel(circulo_solido,8);
-% Num2 = max(max(num_regions));
+% NET.addAssembly('System.Speech');
+% obj = System.Speech.Synthesis.SpeechSynthesizer;
+% obj.Volume = 100;
+% Speak(obj, palabra);
 
-% Componentes_conexos = bwconncomp(circulo_solido);
-% imagen_etiquetada= labelmatrix(Componentes_conexos);
-% RGB = label2rgb(imagen_etiquetada);
-% figure,imshow(RGB);
 
 %figure,imshow(circulo_solido);
 title('Imagen con Círculos')
 L = bwlabel(circulo_solido,8);
 stats = regionprops(L,'all');
-stats(1)
+
 % circulo_solido = im2logical(circulo_solido);
 % stats = regionprops(circulo_solido,'Perimeter','Area','Centroid','BoundingBox');
 
 figure,imshow(Im_base);
+hold on;
+
+for k=1:length(stats)
+    thisboundingBox =stats(k).BoundingBox;
+    rectangle('Position',[thisboundingBox(1)...
+        ,thisboundingBox(2),thisboundingBox(3)...
+        ,thisboundingBox(4)],'EdgeColor','r','LineWidth',2 );
+    
+    text(stats(k).Centroid(1),stats(k).Centroid(2),'Text','Colo','r','FontSize',18);
+    
+    
+end
+
 
 
 

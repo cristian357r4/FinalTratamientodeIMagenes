@@ -22,7 +22,7 @@ function varargout = Gui_Proyecto_Final(varargin)
 
 % Edit the above text to modify the response to help Gui_Proyecto_Final
 
-% Last Modified by GUIDE v2.5 02-Dec-2019 02:19:12
+% Last Modified by GUIDE v2.5 02-Dec-2019 02:51:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,60 +78,59 @@ function btn_iniciarProceso_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_iniciarProceso (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-im = handles.im_base;
+Im = handles.im_base;
 num = handles.im_num;
-disp(num);
-im = procesamiento_imagen(im);
-imshow(im);
+axes(handles.imagen_resultante);
 
-    pause(2);
-    
-    Im_gray= rgb2gray(Im);
-    Im = uint8(Im);
-    imshow(Im_gray);
-    pause(2);
-    Im_bw = im2bw(Im_gray,0.4);
-    imshow(Im_bw);
-    pause(2);
-    Contornos_im = edge(Im_bw,'sobel');
+pause(1);
 
-    %limpia_bordes = imclearborder(Contornos_im);
-    %figure,imshow(Im_bw);
+Im_gray= rgb2gray(Im);
+Im = uint8(Im);
+imshow(Im_gray);
+pause(1);
+Im_bw = im2bw(Im_gray,0.4);
+imshow(Im_bw);
+pause(1);
+Contornos_im = edge(Im_bw,'sobel');
 
-    llena_hollos = imfill(Contornos_im,'holes');
-    circulo_solido = bwareaopen(llena_hollos,1200);
-    %figure,imshow(circulo_solido);
+%limpia_bordes = imclearborder(Contornos_im);
+%figure,imshow(Im_bw);
 
-    circulo_solido =im2double(circulo_solido);
-    circulo_solido =im2uint8(circulo_solido);
+llena_hollos = imfill(Contornos_im,'holes');
+circulo_solido = bwareaopen(llena_hollos,1200);
+%figure,imshow(circulo_solido);
 
-    %% Operacion logica extraccion de las señas
-    %%notBW = not(circulo_solido);
-    Im_signs = bitand(Im_gray,circulo_solido);
-    imshow(Im_signs);
-    pause(2);
+circulo_solido =im2double(circulo_solido);
+circulo_solido =im2uint8(circulo_solido);
 
-    % ImS_bw = im2bw(Im_signs,0.7);%%probale con 0.7
-    % figure,imshow(ImS_bw);
-    % Im_skel = bwmorph(Im_bw,'skel',Inf);
-    % imshow(Im_skel);
+%% Operacion logica extraccion de las señas
+%%notBW = not(circulo_solido);
+Im_signs = bitand(Im_gray,circulo_solido);
+imshow(Im_signs);
+pause(1);
 
-    Im_bw = im2uint8(Im_bw);
-    label = bwlabel(circulo_solido);
+% ImS_bw = im2bw(Im_signs,0.7);%%probale con 0.7
+% figure,imshow(ImS_bw);
+% Im_skel = bwmorph(Im_bw,'skel',Inf);
+% imshow(Im_skel);
+
+Im_bw = im2uint8(Im_bw);
+label = bwlabel(circulo_solido);
 %stats = regionprops(label,'all');
 
-    for numerodeObjetos = 1:max(max(label))
-        [row, col] = find(label==numerodeObjetos);
-        len=max(row) -min(row)+2;
-        breath = max(col)- min(col);
-        target=uint8(zeros([len breath]));
-        sy = min(col)-1;
-        sx = min(row)-1;
-        for i = 1:size(row,1)
-            x = row(i,1)-sx;
-            y = col(i,1)-sy;
-            target(x,y) = Im_signs(row(i,1),col(i,1));
-        end
+for numerodeObjetos = 1:max(max(label))
+
+    [row, col] = find(label==numerodeObjetos);
+    len=max(row) -min(row)+2;
+    breath = max(col)- min(col);
+    target=uint8(zeros([len breath]));
+    sy = min(col)-1;
+    sx = min(row)-1;
+    for i = 1:size(row,1)
+        x = row(i,1)-sx;
+        y = col(i,1)-sy;
+        target(x,y) = Im_signs(row(i,1),col(i,1));
+    end
 
         %mytitle= strcat('Objeto numero:', num2str(numerodeObjetos));
         %%figure,imshow(target);title(mytitle);
@@ -139,121 +138,121 @@ imshow(im);
 
         %recopila los momentos de hu de cada zona circular de la imagen, esta
         %corresponde a una letra del alfabeto
-        hu_momentos(numerodeObjetos,:) = invmoments(target);
+    hu_momentos(numerodeObjetos,:) = invmoments(target);
 
-    end
+end
     
-    L = bwlabel(circulo_solido,8);
-    stats = regionprops(L,'all');
+L = bwlabel(circulo_solido,8);
+stats = regionprops(L,'all');
 
-    % circulo_solido = im2logical(circulo_solido);
-    % stats = regionprops(circulo_solido,'Perimeter','Area','Centroid','BoundingBox');
+% circulo_solido = im2logical(circulo_solido);
+% stats = regionprops(circulo_solido,'Perimeter','Area','Centroid','BoundingBox');
 
-    imshow(Im);
-    hold on;
+imshow(Im);
+hold on;
     
-    switch(num)
-        case 1
-            load('image1.mat');
-            palabra = imagen_01(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-        case 2
-            load('image2.mat');
-            palabra = imagen_02(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-         case 3
-            load('image3.mat');
-            palabra = imagen_03(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-         case 4
-            load('image4.mat');
-            palabra = imagen_04(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-         case 5
-            load('image5.mat');
-            palabra = imagen_05(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-         case 6
-            load('image6.mat');
-            palabra = imagen_06(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-         case 7
-            load('image7.mat');
-            palabra = imagen_07(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-         case 8
-            load('image8.mat');
-            palabra = imagen_08(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-         case 9
-            load('image9.mat');
-            palabra = imagen_09(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-         case 10
-            load('image10.mat');
-            palabra = imagen_10(:,8);
-            palabra =char(palabra);
-            palabra =string(palabra);
-            NET.addAssembly('System.Speech');
-            obj = System.Speech.Synthesis.SpeechSynthesizer;
-            obj.Volume = 100;
-            Speak(obj, palabra);
-                    
-    end
-    for k=1:length(stats)
-        thisboundingBox =stats(k).BoundingBox;
-        rectangle('Position',[thisboundingBox(1)...
-            ,thisboundingBox(2),thisboundingBox(3)...
-            ,thisboundingBox(4)],'EdgeColor','r','LineWidth',2 );
-        
-        text(stats(k).Centroid(1),stats(k).Centroid(2),palabra(k),'Colo','b','FontSize',18);
+switch(num)
+    case 1
+        load('image1.mat');
+        palabra = imagen_01(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+    case 2
+        load('image2.mat');
+        palabra = imagen_02(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+     case 3
+        load('image3.mat');
+        palabra = imagen_03(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+     case 4
+        load('image4.mat');
+        palabra = imagen_04(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+     case 5
+        load('image5.mat');
+        palabra = imagen_05(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+     case 6
+        load('image6.mat');
+        palabra = imagen_06(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+     case 7
+        load('image7.mat');
+        palabra = imagen_07(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+     case 8
+        load('image8.mat');
+        palabra = imagen_08(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+     case 9
+        load('image9.mat');
+        palabra = imagen_09(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
+     case 10
+        load('image10.mat');
+        palabra = imagen_10(:,8);
+        palabra =char(palabra);
+        palabra =string(palabra);
+        NET.addAssembly('System.Speech');
+        obj = System.Speech.Synthesis.SpeechSynthesizer;
+        obj.Volume = 100;
+        Speak(obj, palabra);
 
-    end
+end
+for k=1:length(stats)
+    thisboundingBox =stats(k).BoundingBox;
+    rectangle('Position',[thisboundingBox(1)...
+        ,thisboundingBox(2),thisboundingBox(3)...
+        ,thisboundingBox(4)],'EdgeColor','r','LineWidth',2 );
+    text(stats(k).Centroid(1),stats(k).Centroid(2),palabra(k),'Colo','b'...
+        ,'FontSize',22,'FontWeight','bold','BackgroundColor',);
+
+end
 
  %% 
     
@@ -393,4 +392,3 @@ imshow(image_base);
 handles.im_base=image_base;
 handles.im_num=8;
 guidata(hObject,handles);
-

@@ -249,7 +249,8 @@ for k=1:length(stats)
     rectangle('Position',[thisboundingBox(1)...
         ,thisboundingBox(2),thisboundingBox(3)...
         ,thisboundingBox(4)],'EdgeColor','r','LineWidth',2 );
-    text(stats(k).Centroid(1),stats(k).Centroid(2),palabra(k),'Colo','b','FontSize',18);
+    text(stats(k).Centroid(1)-15,stats(k).Centroid(2)+78,palabra(k),'Colo','b'...
+        ,'FontSize',22,'FontWeight','bold','BackgroundColor','w');
 
 end
 
